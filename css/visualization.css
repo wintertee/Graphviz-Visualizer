@@ -1,0 +1,42 @@
+/* ==============================================
+   Visualization Components
+   ============================================== */
+
+/* Graph Container */
+#graphContainer {
+    height: 600px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    background: white;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+#graphContainer svg {
+    display: block;
+}
+
+/* Workspace Graph Container */
+.workspace #graphContainer {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+}
+
+/* Interaction Hints */
+.graph-container-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0.8;
+}

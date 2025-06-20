@@ -1,0 +1,215 @@
+/* ==============================================
+   Tooltip Components
+   ============================================== */
+
+/* Custom Tooltip Container */
+.custom-tooltip {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    max-width: 300px;
+    min-width: 150px;
+    width: auto;
+    height: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.custom-tooltip.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Tooltip Content */
+.tooltip-content {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    color: #ffffff;
+    padding: 8px 12px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    line-height: 1.2;
+    position: relative;
+    width: auto;
+    height: auto;
+    border: 1px solid #4a5568;
+}
+
+/* Tooltip Arrow */
+.tooltip-content::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #1a202c;
+}
+
+/* Tooltip positioned above */
+.custom-tooltip.top .tooltip-content::before {
+    top: auto;
+    bottom: -8px;
+    border-bottom: none;
+    border-top: 8px solid #2d3748;
+}
+
+/* Node Tooltip Styles */
+.tooltip-content.node-tooltip {
+    background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+    border-color: #3182ce;
+}
+
+.tooltip-content.node-tooltip::before {
+    border-bottom-color: #1a365d;
+}
+
+.custom-tooltip.top .tooltip-content.node-tooltip::before {
+    border-top-color: #2c5282;
+}
+
+/* Edge Tooltip Styles */
+.tooltip-content.edge-tooltip {
+    background: linear-gradient(135deg, #742a2a 0%, #9c4221 100%);
+    border-color: #dd6b20;
+}
+
+.tooltip-content.edge-tooltip::before {
+    border-bottom-color: #742a2a;
+}
+
+.custom-tooltip.top .tooltip-content.edge-tooltip::before {
+    border-top-color: #9c4221;
+}
+
+/* Tooltip Header */
+.tooltip-header {
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
+}
+
+.tooltip-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #000000;
+    font-weight: bold;
+}
+
+/* Tooltip Body */
+.tooltip-body {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.1;
+}
+
+/* Code formatting within tooltips */
+.tooltip-body code {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+/* Attribute list formatting */
+.tooltip-attributes {
+    margin-top: 2px;
+}
+
+.tooltip-attribute {
+    display: flex;
+    margin-bottom: 1px;
+    font-size: 12px;
+    line-height: 1.1;
+    align-items: baseline;
+    min-height: 14px;
+}
+
+.tooltip-attribute:last-child {
+    margin-bottom: 0;
+}
+
+.tooltip-attribute-key {
+    font-weight: bold;
+    min-width: 50px;
+    color: #f7fafc;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.tooltip-attribute-value {
+    color: #e2e8f0;
+    word-break: break-word;
+    flex: 1;
+}
+
+/* Responsive tooltip */
+@media (max-width: 768px) {
+    .custom-tooltip {
+        max-width: 220px;
+        font-size: 11px;
+    }
+
+    .tooltip-content {
+        padding: 6px 10px;
+    }
+
+    .tooltip-header {
+        font-size: 11px;
+        margin-bottom: 2px;
+        padding-bottom: 2px;
+    }
+
+    .tooltip-attribute {
+        font-size: 10px;
+        margin-bottom: 1px;
+        min-height: 12px;
+    }
+
+    .tooltip-attribute-key {
+        min-width: 40px;
+        margin-right: 4px;
+    }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .tooltip-content {
+        background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        border: 1px solid #4a5568;
+    }
+
+    .tooltip-content::before {
+        border-bottom-color: #2d3748;
+    }
+
+    .custom-tooltip.top .tooltip-content::before {
+        border-top-color: #4a5568;
+    }
+
+    .tooltip-content.node-tooltip {
+        background: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
+    }
+
+    .tooltip-content.edge-tooltip {
+        background: linear-gradient(135deg, #d53f8c 0%, #ed8936 100%);
+    }
+}

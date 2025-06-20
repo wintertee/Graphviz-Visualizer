@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphviz DOT File Visualizer (Modular)</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "@viz-js/viz": "https://cdn.jsdelivr.net/npm/@viz-js/viz@3.14.0/lib/viz-standalone.mjs"
+        }
+    }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Graphviz DOT File Visualizer</h1>
+            <p>Upload a .dot file or paste DOT language content to visualize your graph</p>
+        </header>
+
+        <main>
+            <input type="file" id="fileInput" accept=".dot,.gv" hidden>
+
+            <!-- Workspace -->
+            <div class="workspace" id="workspace">
+                <div class="left-panel">
+                    <div class="editor-section">
+                        <div class="editor-controls">
+                            <div class="editor-title">
+                                <h3>DOT Source Code</h3>
+                            </div>
+                            <div class="controls">
+                                <button id="browseBtn" class="btn secondary">📁 Browse File</button>
+                                <button id="downloadBtn" class="btn secondary">📥 Download SVG</button>
+                                <button id="clearBtn" class="btn danger">🗑️ Clear</button>
+                            </div>
+                        </div>
+                        <textarea id="dotEditor"
+                            placeholder="Enter your DOT source code here or drag & drop a .dot file..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Collapse Button in the middle -->
+                <button id="collapseBtn" class="collapse-btn-middle">
+                    <span>⬅</span>
+                </button>
+
+                <div class="right-panel">
+                    <div class="visualization-section">
+                        <div class="viz-header">
+                            <h3>Graph Visualization</h3>
+                            <div class="viz-controls">
+                                <select id="layoutSelect">
+                                    <option value="dot">Hierarchical (dot)</option>
+                                    <option value="neato">Spring (neato)</option>
+                                    <option value="fdp">Force-directed (fdp)</option>
+                                    <option value="circo">Circular (circo)</option>
+                                    <option value="twopi">Radial (twopi)</option>
+                                </select>
+                                <div class="edge-filter-container">
+                                    <div class="custom-dropdown" id="edgeFilterDropdown">
+                                        <div class="dropdown-header">
+                                            <span class="dropdown-label">Show All Edges</span>
+                                            <span class="dropdown-arrow">▼</span>
+                                        </div>
+                                        <div class="dropdown-content" id="edgeFilterContent">
+                                            <div class="filter-option">
+                                                <input type="checkbox" id="filter-all" value="all" checked>
+                                                <label for="filter-all">Show All Edges</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button id="zoomInBtn" class="btn secondary">🔍+ Zoom In</button>
+                                <button id="zoomOutBtn" class="btn secondary">🔍- Zoom Out</button>
+                                <button id="fitBtn" class="btn secondary">🎯 Reset View</button>
+                            </div>
+                        </div>
+                        <div id="graphContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

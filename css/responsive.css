@@ -1,0 +1,209 @@
+/* ==============================================
+   Responsive Design
+   ============================================== */
+
+/* Tablet Breakpoint */
+@media (max-width: 1024px) {
+    .workspace {
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .left-panel {
+        border-right: none;
+        border-bottom: 2px solid #f0f0f0;
+        min-width: auto;
+        flex: 0 0 40%;
+        overflow: hidden;
+    }
+
+    .right-panel {
+        min-width: auto;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .workspace #dotEditor {
+        min-height: 0;
+        flex: 1;
+        height: 100%;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    .workspace #graphContainer {
+        min-height: 0;
+        flex: 1;
+        height: 100%;
+        overflow: hidden;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+    }
+
+    /* Hide middle button on tablet */
+    .collapse-btn-middle {
+        display: none;
+    }
+
+    .workspace.collapsed {
+        flex-direction: row;
+    }
+
+    .workspace.collapsed .left-panel {
+        width: 60px;
+        border-right: 2px solid #f0f0f0;
+        border-bottom: none;
+        flex: 0 0 auto;
+    }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 768px) {
+    body {
+        overflow: hidden;
+    }
+
+    /* Header Adjustments */
+    header h1 {
+        font-size: 1.1em;
+    }
+
+    header {
+        padding: 3px 0;
+    }
+
+    /* Upload Section */
+    .upload-section {
+        padding: 6px 10px 4px 10px;
+    }
+
+    /* Panel Adjustments */
+    .left-panel .editor-section,
+    .right-panel .visualization-section {
+        padding: 15px;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    /* Control Layout */
+    .editor-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .viz-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .viz-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Workspace Mobile Layout */
+    .workspace {
+        height: 100%;
+        min-height: auto;
+        overflow: hidden;
+    }
+
+    .left-panel {
+        flex: 0 0 35%;
+        overflow: hidden;
+    }
+
+    .right-panel {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .workspace #dotEditor {
+        min-height: 0;
+        height: 100%;
+        flex: 1;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    .workspace #graphContainer {
+        min-height: 0;
+        height: 100%;
+        flex: 1;
+        overflow: hidden;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+    }
+
+    /* Mobile Notifications */
+    .notification-container {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .notification {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+
+    /* Mobile Dropdown Responsive */
+    .edge-filter-container {
+        min-width: 120px;
+    }
+
+    .custom-dropdown {
+        min-width: 120px;
+    }
+
+    .dropdown-content {
+        max-height: 150px;
+    }
+
+    .filter-option {
+        padding: 6px 10px;
+    }
+
+    .filter-option label {
+        font-size: 12px;
+    }
+
+    /* Mobile Collapsed States */
+    .workspace.collapsed .left-panel {
+        width: 50px;
+        flex: 0 0 50px;
+    }
+
+    .workspace.collapsed .collapse-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 14px !important;
+    }
+
+    .workspace.collapsed .left-panel .editor-section {
+        padding: 10px 5px;
+    }
+
+    .editor-title {
+        margin-bottom: 10px;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .collapse-btn {
+        order: -1;
+    }
+
+    .workspace.collapsed .editor-title {
+        justify-content: center;
+    }
+}

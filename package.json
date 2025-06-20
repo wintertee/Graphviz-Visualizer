@@ -1,0 +1,31 @@
+{
+    "name": "graphviz-visualizer",
+    "version": "1.0.0",
+    "description": "A modern, interactive Graphviz DOT file visualizer with edge filtering and responsive design",
+    "main": "app.js",
+    "type": "module",
+    "scripts": {
+        "dev": "python -m http.server 8000",
+        "serve": "python -m http.server 8000",
+        "build": "echo 'Static files - no build step required'",
+        "lint": "echo 'ESLint configuration needed'",
+        "format": "echo 'Prettier configuration needed'"
+    },
+    "keywords": [
+        "graphviz",
+        "dot",
+        "visualization",
+        "svg",
+        "javascript",
+        "modular"
+    ],
+    "author": "wintertee",
+    "license": "MIT",
+    "dependencies": {
+        "@viz-js/viz": "^3.14.0"
+    },
+    "devDependencies": {},
+    "engines": {
+        "node": ">=14.0.0"
+    }
+}

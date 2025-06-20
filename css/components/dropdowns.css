@@ -1,0 +1,140 @@
+/* ==============================================
+   Dropdown and Form Components
+   ============================================== */
+
+/* Select Inputs */
+#layoutSelect {
+    padding: 8px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+#layoutSelect:focus {
+    border-color: #667eea;
+}
+
+/* Edge Filter Dropdown */
+.edge-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+}
+
+.edge-filter-container label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+}
+
+.custom-dropdown {
+    position: relative;
+    min-width: 180px;
+}
+
+.dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+
+.dropdown-header:hover {
+    border-color: #667eea;
+}
+
+.dropdown-header.active {
+    border-color: #667eea;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.dropdown-label {
+    color: #333;
+    font-weight: 500;
+}
+
+.dropdown-arrow {
+    color: #666;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.dropdown-header.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Content */
+.dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #667eea;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1001;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown-content.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Filter Options */
+.filter-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filter-option:hover {
+    background-color: #f5f5f5;
+}
+
+.filter-option input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.filter-option label {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: normal;
+    color: #333;
+    flex: 1;
+    margin: 0;
+}
+
+.filter-option.all-edges {
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+}
+
+.filter-count {
+    font-size: 11px;
+    color: #888;
+    margin-left: auto;
+}

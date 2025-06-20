@@ -1,0 +1,148 @@
+/* ==============================================
+   Layout System - Container and Grid
+   ============================================== */
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Section */
+header {
+    text-align: center;
+    padding: 5px 0;
+    color: white;
+    flex-shrink: 0;
+}
+
+header h1 {
+    font-size: 1.2em;
+    margin-bottom: 2px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+header p {
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+/* Main Content Area */
+main {
+    background: white;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Workspace Layout - Left/Right Panels */
+.workspace {
+    display: flex;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.left-panel {
+    flex: 1;
+    min-width: 400px;
+    border-right: 2px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.right-panel {
+    flex: 1;
+    min-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Panel Sections */
+.editor-section {
+    padding: 40px;
+    border-bottom: 2px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.editor-section.dragover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: #667eea;
+    border-style: dashed;
+}
+
+.visualization-section {
+    padding: 40px;
+}
+
+/* Workspace Specific Layouts */
+.left-panel .editor-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-bottom: none;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.right-panel .visualization-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Control Groups */
+.editor-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.workspace .editor-section .editor-controls {
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Visualization Header */
+.viz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.viz-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.viz-controls .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+}

@@ -1,0 +1,24 @@
+/* ==============================================
+   Graphviz Visualizer - Main Stylesheet
+   
+   A modular CSS architecture for better maintainability
+   ============================================== */
+
+/* Base styles and reset */
+@import url('./base.css');
+
+/* Layout system */
+@import url('./layout.css');
+
+/* Component modules */
+@import url('./components/buttons.css');
+@import url('./components/dropdowns.css');
+@import url('./components/notifications.css');
+@import url('./components/tooltips.css');
+
+/* Feature-specific styles */
+@import url('./editor.css');
+@import url('./visualization.css');
+
+/* Responsive design */
+@import url('./responsive.css');
