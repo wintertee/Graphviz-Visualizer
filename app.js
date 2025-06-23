@@ -5,6 +5,7 @@ import { EventHandler } from './js/event-handler.js';
 import { SVGRenderer } from './js/svg-renderer.js';
 import { NotificationManager } from './js/notification-manager.js';
 import { EdgeFilter } from './js/edge-filter.js';
+import { EdgeColoring } from './js/edge-coloring.js';
 import { CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES, UTILS } from './js/config.js';
 import { ErrorHandler } from './js/error-handler.js';
 
@@ -44,6 +45,7 @@ class GraphvizVisualizer {
             this.eventHandler = new EventHandler(this);
             this.svgRenderer = new SVGRenderer(this);
             this.edgeFilter = new EdgeFilter(this);
+            this.edgeColoring = new EdgeColoring(this);
         } catch (error) {
             console.error('Failed to initialize modules:', error);
             // Can't show notification yet since notificationManager might not be initialized
@@ -82,6 +84,7 @@ class GraphvizVisualizer {
         this.fileHandler.setupFileHandling();
         this.eventHandler.setupAllEventListeners();
         this.edgeFilter.setupEventListeners();
+        this.edgeColoring.setupEventListeners();
     }
 
     loadSample(sampleType) {
@@ -154,8 +157,23 @@ class GraphvizVisualizer {
             // Show loading state
             this.setLoadingState(container, 'Rendering graph...');
 
+            // Determine what content to render
+            let renderContent = dotContent;
+            
+            // Apply edge filter if active
+            if (this.edgeFilter.isFilterActive()) {
+                renderContent = this.edgeFilter.getCurrentFilteredContent();
+            }
+            
+            // Apply edge coloring if enabled
+            if (this.edgeColoring.isEnabled) {
+                this.edgeColoring.parseEdgeTypes(renderContent);
+                renderContent = this.edgeColoring.applyColoring(renderContent);
+                this.edgeColoring.showColorLegend();
+            }
+
             // Render the graph using the new Viz.js API
-            const svg = this.viz.renderSVGElement(dotContent, {
+            const svg = this.viz.renderSVGElement(renderContent, {
                 engine: this.currentLayout
             });
 
@@ -210,6 +228,46 @@ class GraphvizVisualizer {
 
         } catch (error) {
             this.handleRenderError(error, container, 'Filter Rendering Error');
+        }
+    }
+
+    async renderColoredGraph(coloredDotContent) {
+        // Validation checks
+        if (this.isInitializing) {
+            this.showMessage('Graphviz engine is still loading. Please wait a moment...', 'warning');
+            return;
+        }
+
+        if (!this.viz) {
+            this.showMessage('Graphviz engine failed to initialize. Please refresh the page.', 'error');
+            return;
+        }
+
+        if (!coloredDotContent || !coloredDotContent.trim()) {
+            this.showMessage('No content to render with coloring', 'warning');
+            return;
+        }
+
+        const container = document.getElementById('graphContainer');
+
+        try {
+            // Show loading state
+            this.setLoadingState(container, 'Applying edge coloring and rendering graph...');
+
+            // Render the colored graph using the new Viz.js API
+            const svg = this.viz.renderSVGElement(coloredDotContent, {
+                engine: this.currentLayout
+            });
+
+            // Clear container and add the SVG
+            container.innerHTML = '';
+            container.appendChild(svg);
+
+            // Make the SVG responsive and add interactions
+            this.svgRenderer.setupSVGInteractions(svg, container);
+
+        } catch (error) {
+            this.handleRenderError(error, container, 'Edge Coloring Rendering Error');
         }
     }
 
@@ -331,6 +389,13 @@ class GraphvizVisualizer {
         this.edgeFilter.selectedLabels.clear();
         this.edgeFilter.selectedLabels.add('all');
         this.edgeFilter.updateFilterDropdown();
+
+        // Reset edge coloring
+        this.edgeColoring.isEnabled = false;
+        this.edgeColoring.edgeTypes.clear();
+        this.edgeColoring.colorMap.clear();
+        this.edgeColoring.updateToggleButton();
+        this.edgeColoring.hideColorLegend();
 
         // Reset file input
         document.getElementById('fileInput').value = '';

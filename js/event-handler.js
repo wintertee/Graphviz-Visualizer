@@ -27,7 +27,8 @@ export class EventHandler {
             fitBtn: () => this.visualizer.fitToScreen(),
             zoomInBtn: () => this.visualizer.zoomIn(),
             zoomOutBtn: () => this.visualizer.zoomOut(),
-            collapseBtn: () => this.toggleLeftPanel()
+            collapseBtn: () => this.toggleLeftPanel(),
+            edgeColoringToggle: () => this.visualizer.edgeColoring.toggle()
         };
 
         Object.entries(controls).forEach(([id, handler]) => {
@@ -98,6 +99,7 @@ export class EventHandler {
                 this.visualizer.edgeFilter.parseEdgeLabels(content);
                 this.visualizer.edgeFilter.updateFilterDropdown();
 
+                // Use the unified renderGraph method which handles both filtering and coloring
                 this.visualizer.renderGraph();
             }
         }, 500); // 500ms debounce

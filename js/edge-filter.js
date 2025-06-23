@@ -365,14 +365,38 @@ export class EdgeFilter {
                 const currentDot = document.getElementById('dotEditor').value.trim();
                 const filteredDot = this.filterDotContent(currentDot, this.selectedLabels);
 
-                // Re-render the graph with filtered content
-                this.visualizer.renderFilteredGraph(filteredDot);
+                // Check if edge coloring is enabled
+                if (this.visualizer.edgeColoring.isEnabled) {
+                    // Apply coloring to filtered content
+                    this.visualizer.edgeColoring.parseEdgeTypes(filteredDot);
+                    const coloredFilteredDot = this.visualizer.edgeColoring.applyColoring(filteredDot);
+                    this.visualizer.edgeColoring.showColorLegend();
+                    this.visualizer.renderColoredGraph(coloredFilteredDot);
+                } else {
+                    // Re-render the graph with filtered content only
+                    this.visualizer.renderFilteredGraph(filteredDot);
+                }
 
             } catch (error) {
                 console.error('Error applying filter:', error);
                 this.visualizer.showMessage('Error applying edge filter', 'error');
             }
         }, 200); // 200ms debounce
+    }
+
+    // Get the current filtered DOT content without re-rendering
+    getCurrentFilteredContent() {
+        if (!this.visualizer.currentDot) {
+            return '';
+        }
+
+        const currentDot = document.getElementById('dotEditor').value.trim();
+        return this.filterDotContent(currentDot, this.selectedLabels);
+    }
+
+    // Check if filter is currently active (not showing all edges)
+    isFilterActive() {
+        return !this.selectedLabels.has('all') && this.selectedLabels.size > 0;
     }
 
     // Toggle dropdown visibility

@@ -15,6 +15,7 @@
 @import url('./components/dropdowns.css');
 @import url('./components/notifications.css');
 @import url('./components/tooltips.css');
+@import url('./components/edge-coloring.css');
 
 /* Feature-specific styles */
 @import url('./editor.css');
