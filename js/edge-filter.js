@@ -37,7 +37,8 @@ export class EdgeFilter {
                 const trimmedLine = line.trim();
 
                 // Check if this line starts an edge definition
-                if (trimmedLine.includes('->') || trimmedLine.includes('--')) {
+                // More precise check: not inside attribute brackets and matches edge pattern
+                if (this.isEdgeDefinitionLine(trimmedLine)) {
                     // Parse the complete edge definition
                     const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -163,7 +164,7 @@ export class EdgeFilter {
             const trimmedLine = line.trim();
 
             // Check if this line starts an edge definition
-            if (trimmedLine.includes('->') || trimmedLine.includes('--')) {
+            if (this.isEdgeDefinitionLine(trimmedLine)) {
                 // This might be a multi-line edge definition
                 const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -302,6 +303,33 @@ export class EdgeFilter {
             nodeText: nodeText,
             endLineIndex: currentIndex
         };
+    }
+
+    // Check if a line represents the start of an edge definition
+    isEdgeDefinitionLine(line) {
+        // Skip empty lines and comments
+        if (!line || line.startsWith('//') || line.startsWith('#')) {
+            return false;
+        }
+
+        // Skip lines that are clearly attribute assignments (contain = but not in edge context)
+        if (line.includes('=') && !line.match(/\w+\s*(-[->]|--)\s*\w+/)) {
+            return false;
+        }
+
+        // Skip lines that start with attribute names followed by =
+        if (/^\s*\w+\s*=/.test(line)) {
+            return false;
+        }
+
+        // Check for edge connectors but ensure it's not inside quotes or string values
+        const edgeConnectorRegex = /(?:^|[^"'])[^"']*?(-[->]|--)(?:[^"']*?(?:$|[^"']))/;
+
+        // More precise check: line should look like an edge definition
+        // Should match: nodeA -> nodeB or nodeA -- nodeB (with optional whitespace)
+        const edgePattern = /^\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)\s*(-[->]|--)\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)/;
+
+        return edgePattern.test(line);
     }
 
     // Handle filter selection changes

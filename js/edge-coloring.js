@@ -9,15 +9,52 @@ export class EdgeColoring {
         this.colorMap = new Map();
 
         // Predefined color palette - sufficient for most use cases
+        // Color palette: maximize contrast for first several colors, then gradually reduce difference
         this.colorPalette = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
-            '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
-            '#FF6348', '#2ED573', '#3742FA', '#A55EEA', '#26D0CE',
-            '#FFA502', '#FF3838', '#1DD1A1', '#5352ED', '#FC427B',
-            '#2F3542', '#40407A', '#706FD3', '#F8B500', '#B33771',
-            '#3D5A80', '#EE6C4D', '#3A86FF', '#06FFA5', '#FFBE0B',
-            '#FB8500', '#8ECAE6', '#219EBC', '#023047', '#FFB3C6',
-            '#FB8B24', '#D62828', '#F77F00', '#FCBF49', '#003566'
+            // High-contrast, visually distinct colors (first 8)
+            '#FF6B6B', // red
+            '#4ECDC4', // teal
+            '#FFD166', // yellow
+            '#3A86FF', // blue
+            '#8338EC', // purple
+            '#06D6A0', // green
+            '#FF9F1C', // orange
+            '#118AB2', // cyan
+
+            // Next group: less contrast, but still distinct
+            '#FFB4A2', // light red
+            '#B5E48C', // light green
+            '#A0C4FF', // light blue
+            '#F7B801', // gold
+            '#B5838D', // mauve
+            '#8D99AE', // gray-blue
+            '#F28482', // salmon
+            '#43AA8B', // muted teal
+
+            // Final group: subtle variations, lower contrast
+            '#CDB4DB', // lavender
+            '#BDE0FE', // pale blue
+            '#CAFFBF', // pale green
+            '#FFD6A5', // pale orange
+            '#FFC8DD', // pale pink
+            '#D0F4DE', // mint
+            '#E2F0CB', // light lime
+            '#FFDAC1', // peach
+            '#BFD8B8', // sage
+            '#E4C1F9', // light purple
+            '#F1C0E8', // light magenta
+            '#C2F9BB', // light mint
+            '#FFF1C1', // light yellow
+            '#B5EAD7', // light aqua
+            '#E2F0CB', // light green
+            '#FFB7B2', // light coral
+            '#B5B9FF', // light indigo
+            '#D4A5A5', // dusty rose
+            '#B8B8FF', // periwinkle
+            '#F3E9DD', // off white
+            '#D6E2E9', // pale blue-gray
+            '#F6DFEB', // pale pink
+            '#EDE7F6'  // very pale purple
         ];
     }
 
@@ -34,7 +71,7 @@ export class EdgeColoring {
                 const trimmedLine = line.trim();
 
                 // Check if this line starts an edge definition
-                if (trimmedLine.includes('->') || trimmedLine.includes('--')) {
+                if (this.isEdgeDefinitionLine(trimmedLine)) {
                     // Parse the complete edge definition
                     const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -139,7 +176,7 @@ export class EdgeColoring {
                 const trimmedLine = line.trim();
 
                 // Check if this line starts an edge definition
-                if (trimmedLine.includes('->') || trimmedLine.includes('--')) {
+                if (this.isEdgeDefinitionLine(trimmedLine)) {
                     // Parse the complete edge definition
                     const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -357,6 +394,33 @@ export class EdgeColoring {
         if (legend) {
             legend.remove();
         }
+    }
+
+    // Check if a line represents the start of an edge definition
+    isEdgeDefinitionLine(line) {
+        // Skip empty lines and comments
+        if (!line || line.startsWith('//') || line.startsWith('#')) {
+            return false;
+        }
+
+        // Skip lines that are clearly attribute assignments (contain = but not in edge context)
+        if (line.includes('=') && !line.match(/\w+\s*(-[->]|--)\s*\w+/)) {
+            return false;
+        }
+
+        // Skip lines that start with attribute names followed by =
+        if (/^\s*\w+\s*=/.test(line)) {
+            return false;
+        }
+
+        // Check for edge connectors but ensure it's not inside quotes or string values
+        const edgeConnectorRegex = /(?:^|[^"'])[^"']*?(-[->]|--)(?:[^"']*?(?:$|[^"']))/;
+
+        // More precise check: line should look like an edge definition
+        // Should match: nodeA -> nodeB or nodeA -- nodeB (with optional whitespace)
+        const edgePattern = /^\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)\s*(-[->]|--)\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)/;
+
+        return edgePattern.test(line);
     }
 
     // Setup event listeners
