@@ -7,7 +7,7 @@ export class EdgeColoring {
         this.isEnabled = false;
         this.edgeTypes = new Set();
         this.colorMap = new Map();
-        
+
         // Predefined color palette - sufficient for most use cases
         this.colorPalette = [
             '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
@@ -24,7 +24,7 @@ export class EdgeColoring {
     // Parse edge types from DOT content (reuse edge filter's logic)
     parseEdgeTypes(dotContent) {
         this.edgeTypes.clear();
-        
+
         try {
             const lines = dotContent.split('\n');
             let i = 0;
@@ -110,7 +110,7 @@ export class EdgeColoring {
     generateColorMapping() {
         this.colorMap.clear();
         const types = Array.from(this.edgeTypes).sort();
-        
+
         types.forEach((type, index) => {
             // Use modulo to cycle through colors if we have more types than colors
             const colorIndex = index % this.colorPalette.length;
@@ -185,7 +185,7 @@ export class EdgeColoring {
 
             // Check if edge already has attributes
             const hasAttributes = edgeText.includes('[') && edgeText.includes(']');
-            
+
             if (hasAttributes) {
                 // Check if color attribute already exists
                 const colorPattern = /\bcolor\s*=\s*[^,\]]+/i;
@@ -217,13 +217,13 @@ export class EdgeColoring {
     // Toggle edge coloring on/off
     toggle() {
         this.isEnabled = !this.isEnabled;
-        
+
         // Update UI to reflect the change
         this.updateToggleButton();
-        
+
         // Apply changes immediately
         this.applyColoringToCurrentGraph();
-        
+
         return this.isEnabled;
     }
 
@@ -247,7 +247,7 @@ export class EdgeColoring {
     applyColoringToCurrentGraph() {
         // Get current DOT content from editor first
         const currentDot = document.getElementById('dotEditor').value.trim();
-        
+
         if (!currentDot) {
             this.visualizer.showMessage('Please enter DOT content first', 'warning');
             return;
@@ -266,25 +266,25 @@ export class EdgeColoring {
                     // Use filtered content if filter is active
                     contentToColor = this.visualizer.edgeFilter.getCurrentFilteredContent();
                 }
-                
+
                 // Parse edge types and apply coloring to the content (filtered or original)
                 this.parseEdgeTypes(contentToColor);
                 const coloredDot = this.applyColoring(contentToColor);
-                
+
                 // Show color legend
                 this.showColorLegend();
-                
+
                 // Re-render with colored edges
                 this.visualizer.renderColoredGraph(coloredDot);
-                
+
                 this.visualizer.showMessage(
-                    `Edge coloring applied to ${this.edgeTypes.size} edge types`, 
+                    `Edge coloring applied to ${this.edgeTypes.size} edge types`,
                     'success'
                 );
             } else {
                 // Hide color legend
                 this.hideColorLegend();
-                
+
                 // Check if we need to apply filter or render normally
                 if (this.visualizer.edgeFilter.isFilterActive()) {
                     const filteredDot = this.visualizer.edgeFilter.getCurrentFilteredContent();
@@ -292,7 +292,7 @@ export class EdgeColoring {
                 } else {
                     this.visualizer.renderGraph();
                 }
-                
+
                 this.visualizer.showMessage('Edge coloring disabled', 'info');
             }
 
@@ -315,7 +315,7 @@ export class EdgeColoring {
         const legend = document.createElement('div');
         legend.id = 'edgeColorLegend';
         legend.className = 'edge-color-legend';
-        
+
         // Add legend title
         const title = document.createElement('div');
         title.className = 'legend-title';
@@ -329,15 +329,15 @@ export class EdgeColoring {
             if (color) {
                 const item = document.createElement('div');
                 item.className = 'legend-item';
-                
+
                 const colorBox = document.createElement('div');
                 colorBox.className = 'legend-color';
                 colorBox.style.backgroundColor = color;
-                
+
                 const label = document.createElement('span');
                 label.className = 'legend-label';
                 label.textContent = type === '__no_label__' ? 'No label' : type;
-                
+
                 item.appendChild(colorBox);
                 item.appendChild(label);
                 legend.appendChild(item);

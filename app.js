@@ -159,12 +159,12 @@ class GraphvizVisualizer {
 
             // Determine what content to render
             let renderContent = dotContent;
-            
+
             // Apply edge filter if active
             if (this.edgeFilter.isFilterActive()) {
                 renderContent = this.edgeFilter.getCurrentFilteredContent();
             }
-            
+
             // Apply edge coloring if enabled
             if (this.edgeColoring.isEnabled) {
                 this.edgeColoring.parseEdgeTypes(renderContent);
