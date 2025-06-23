@@ -59,8 +59,7 @@ class GraphvizVisualizer {
 
     async init() {
         await Promise.all([
-            this.initializeViz(),
-            this.initializeSamples()
+            this.initializeViz()
         ]);
         this.setupEventListeners();
         this.showWorkspace(); // Always show workspace after initialization
@@ -77,10 +76,6 @@ class GraphvizVisualizer {
             this.isInitializing = false;
             this.showMessage('Failed to initialize Graphviz engine. Please refresh the page.', 'error');
         }
-    }
-
-    async initializeSamples() {
-        this.samples = await this.fileHandler.setupSamples();
     }
 
     setupEventListeners() {

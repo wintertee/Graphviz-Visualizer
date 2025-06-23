@@ -1,4 +1,6 @@
 // File handling utilities
+import { DOT_PATTERNS } from './dot-regex-patterns.js';
+
 export class FileHandler {
     constructor(visualizer) {
         this.visualizer = visualizer;
@@ -146,27 +148,11 @@ export class FileHandler {
 
         const trimmedContent = content.trim();
 
-        // Check for basic DOT structure
+        // Check for basic DOT structure using global patterns
         const hasGraphKeyword = /\b(graph|digraph)\b/i.test(trimmedContent);
         const hasOpeningBrace = trimmedContent.includes('{');
         const hasClosingBrace = trimmedContent.includes('}');
 
         return hasGraphKeyword && hasOpeningBrace && hasClosingBrace;
-    }
-
-    async setupSamples() {
-        const sampleNames = ['simple', 'hierarchy', 'network', 'workflow', 'complex'];
-
-        const loadPromises = sampleNames.map(async (name) => {
-            try {
-                const response = await fetch(`/examples/${name}.dot`);
-                return [name, response.ok ? await response.text() : `// Failed to load /examples/${name}.dot`];
-            } catch (e) {
-                return [name, `// Error loading /examples/${name}.dot`];
-            }
-        });
-
-        const results = await Promise.all(loadPromises);
-        return Object.fromEntries(results);
     }
 }

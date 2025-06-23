@@ -1,4 +1,6 @@
 // Edge filter module for filtering edges by label
+import { DOT_PATTERNS, DOT_VALUE_EXTRACTORS } from './dot-regex-patterns.js';
+
 export class EdgeFilter {
     constructor(visualizer) {
         this.visualizer = visualizer;
@@ -26,18 +28,32 @@ export class EdgeFilter {
         this.edgeLabels.clear();
 
         try {
-            // Regular expression to match edges with labels
-            // Matches both -> and -- (directed and undirected graphs)
-            // Captures label attributes in square brackets
-            const edgeRegex = /\w+\s*(?:->|--)\s*\w+\s*\[([^\]]+)\]/g;
-            const labelRegex = /label\s*=\s*["']([^"']+)["']/;
+            // Parse edges using the same logic as filtering to handle multi-line definitions
+            const lines = dotContent.split('\n');
+            let i = 0;
 
-            let match;
-            while ((match = edgeRegex.exec(dotContent)) !== null) {
-                const attributes = match[1];
-                const labelMatch = attributes.match(labelRegex);
-                if (labelMatch) {
-                    this.edgeLabels.add(labelMatch[1]);
+            while (i < lines.length) {
+                const line = lines[i];
+                const trimmedLine = line.trim();
+
+                // Check if this line starts an edge definition
+                if (trimmedLine.includes('->') || trimmedLine.includes('--')) {
+                    // Parse the complete edge definition
+                    const edgeBlock = this.parseCompleteEdge(lines, i);
+
+                    if (edgeBlock.edgeText) {
+                        // Check if the complete edge has a label
+                        const labelMatch = edgeBlock.edgeText.match(DOT_PATTERNS.ATTRIBUTE.LABEL);
+                        if (labelMatch) {
+                            const labelValue = DOT_VALUE_EXTRACTORS.extractValue(labelMatch, 1);
+                            this.edgeLabels.add(labelValue);
+                        }
+                    }
+
+                    // Skip to after this edge block
+                    i = edgeBlock.endLineIndex + 1;
+                } else {
+                    i++;
                 }
             }
 
@@ -137,36 +153,155 @@ export class EdgeFilter {
             return dotContent;
         }
 
+        // Parse the entire DOT content to identify complete edge structures
         const lines = dotContent.split('\n');
         const filteredLines = [];
+        let i = 0;
 
-        for (const line of lines) {
+        while (i < lines.length) {
+            const line = lines[i];
             const trimmedLine = line.trim();
 
-            // Check if this line contains an edge
+            // Check if this line starts an edge definition
             if (trimmedLine.includes('->') || trimmedLine.includes('--')) {
-                // Check if the edge has a label attribute
-                const labelMatch = trimmedLine.match(/label\s*=\s*["']([^"']+)["']/);
+                // This might be a multi-line edge definition
+                const edgeBlock = this.parseCompleteEdge(lines, i);
 
-                if (labelMatch) {
-                    const edgeLabel = labelMatch[1];
-                    // Only include this edge if its label is selected
-                    if (selectedLabels.has(edgeLabel)) {
-                        filteredLines.push(line);
-                    }
-                } else {
-                    // Edge without label - include if "no label" option is selected
-                    if (selectedLabels.has('__no_label__')) {
-                        filteredLines.push(line);
+                if (edgeBlock.edgeText) {
+                    // Check if the complete edge has a label
+                    const labelMatch = edgeBlock.edgeText.match(DOT_PATTERNS.ATTRIBUTE.LABEL);
+
+                    if (labelMatch) {
+                        const edgeLabel = DOT_VALUE_EXTRACTORS.extractValue(labelMatch, 1);
+                        // Only include this edge if its label is selected
+                        if (selectedLabels.has(edgeLabel)) {
+                            // Add all lines of this edge
+                            for (let j = i; j <= edgeBlock.endLineIndex; j++) {
+                                filteredLines.push(lines[j]);
+                            }
+                        }
+                    } else {
+                        // Edge without label - include if "no label" option is selected
+                        if (selectedLabels.has('__no_label__')) {
+                            // Add all lines of this edge
+                            for (let j = i; j <= edgeBlock.endLineIndex; j++) {
+                                filteredLines.push(lines[j]);
+                            }
+                        }
                     }
                 }
+
+                // Skip to after this edge block
+                i = edgeBlock.endLineIndex + 1;
             } else {
-                // Not an edge line (node definition, graph properties, etc.) - always include
-                filteredLines.push(line);
+                // Check if this line starts a node definition
+                if (trimmedLine.match(/^\s*[a-zA-Z0-9_"<][^-]*\[/) ||
+                    trimmedLine.match(/^\s*[a-zA-Z0-9_"<][^-]*\s*$/) ||
+                    trimmedLine.includes('=') && !trimmedLine.includes('->') && !trimmedLine.includes('--')) {
+
+                    // This might be a multi-line node definition
+                    const nodeBlock = this.parseCompleteNode(lines, i);
+
+                    // Always include node definitions (nodes are not filtered, only edges)
+                    for (let j = i; j <= nodeBlock.endLineIndex; j++) {
+                        filteredLines.push(lines[j]);
+                    }
+
+                    // Skip to after this node block
+                    i = nodeBlock.endLineIndex + 1;
+                } else {
+                    // Other lines (graph properties, comments, etc.) - always include
+                    filteredLines.push(line);
+                    i++;
+                }
             }
         }
 
         return filteredLines.join('\n');
+    }
+
+    // Parse a complete edge definition that might span multiple lines
+    parseCompleteEdge(lines, startIndex) {
+        let edgeText = '';
+        let currentIndex = startIndex;
+        let bracketDepth = 0;
+        let foundOpenBracket = false;
+
+        // Continue parsing until we have a complete edge definition
+        while (currentIndex < lines.length) {
+            const line = lines[currentIndex];
+            const trimmedLine = line.trim();
+
+            edgeText += line;
+            if (currentIndex < lines.length - 1) {
+                edgeText += '\n';
+            }
+
+            // Count brackets to determine when edge definition ends
+            for (let char of line) {
+                if (char === '[') {
+                    bracketDepth++;
+                    foundOpenBracket = true;
+                } else if (char === ']') {
+                    bracketDepth--;
+                }
+            }
+
+            // If we found brackets and they're balanced, or if no brackets at all
+            if ((foundOpenBracket && bracketDepth === 0) ||
+                (!foundOpenBracket && (trimmedLine.endsWith(';') || !trimmedLine.includes('=')))) {
+                break;
+            }
+
+            currentIndex++;
+        }
+
+        return {
+            edgeText: edgeText,
+            endLineIndex: currentIndex
+        };
+    }
+
+    // Parse a complete node definition that might span multiple lines
+    parseCompleteNode(lines, startIndex) {
+        let nodeText = '';
+        let currentIndex = startIndex;
+        let bracketDepth = 0;
+        let foundOpenBracket = false;
+
+        // Continue parsing until we have a complete node definition
+        while (currentIndex < lines.length) {
+            const line = lines[currentIndex];
+            const trimmedLine = line.trim();
+
+            nodeText += line;
+            if (currentIndex < lines.length - 1) {
+                nodeText += '\n';
+            }
+
+            // Count brackets to determine when node definition ends
+            for (let char of line) {
+                if (char === '[') {
+                    bracketDepth++;
+                    foundOpenBracket = true;
+                } else if (char === ']') {
+                    bracketDepth--;
+                }
+            }
+
+            // If we found brackets and they're balanced, or if no brackets at all
+            if ((foundOpenBracket && bracketDepth === 0) ||
+                (!foundOpenBracket && (trimmedLine.endsWith(';') || !trimmedLine.includes('=')))) {
+                break;
+            }
+
+            currentIndex++;
+        }
+
+        return {
+            nodeText: nodeText,
+            endLineIndex: currentIndex
+        };
     }
 
     // Handle filter selection changes

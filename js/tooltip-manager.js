@@ -1,4 +1,6 @@
 // Custom tooltip manager for enhanced tooltip experience
+import { DOT_PATTERNS, DOT_VALUE_EXTRACTORS } from './dot-regex-patterns.js';
+
 export class TooltipManager {
     constructor() {
         this.currentTooltip = null;
@@ -85,31 +87,30 @@ export class TooltipManager {
 
         const firstLine = lines[0];
 
-        // Try to extract ID from the first line
+        // Try to extract ID from the first line using global patterns
         let id = 'Unknown';
-        const idMatch = firstLine.match(/^([a-zA-Z0-9_]+)(?:\s*(-[->]|--)\s*([a-zA-Z0-9_]+))?\s*\[/);
-        if (idMatch) {
-            if (idMatch[2]) {
-                // Edge definition
-                id = `${idMatch[1]}${idMatch[2]}${idMatch[3]}`;
-            } else {
-                // Node definition
-                id = idMatch[1];
-            }
+        const edgeMatch = firstLine.match(DOT_PATTERNS.EDGE.DEFINITION);
+        const nodeMatch = firstLine.match(DOT_PATTERNS.NODE_ID.DEFINITION);
+
+        if (edgeMatch) {
+            // Edge definition
+            const { sourceNode, connector, targetNode } = DOT_VALUE_EXTRACTORS.extractEdgeNodes(edgeMatch);
+            id = `${sourceNode}${connector}${targetNode}`;
+        } else if (nodeMatch) {
+            // Node definition
+            id = DOT_VALUE_EXTRACTORS.extractValue(nodeMatch, 1);
         }
 
-        // Extract attributes with improved regex
+        // Extract attributes with improved regex using global patterns
         const attributes = [];
-        const fullContent = lines.join(' ').replace(/\s+/g, ' ');
+        const fullContent = lines.join(' ').replace(DOT_PATTERNS.UTILITY.WHITESPACE, ' ');
 
-        // More comprehensive attribute regex that handles quoted values better
-        const attributeRegex = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^,\]\s]+))/g;
+        // Use global attribute pattern for comprehensive matching
+        const attributeRegex = DOT_PATTERNS.ATTRIBUTE.COMPLETE_GLOBAL;
         let match;
 
         while ((match = attributeRegex.exec(fullContent)) !== null) {
-            const key = match[1];
-            // Get the value from whichever capture group matched
-            const value = match[2] || match[3] || match[4] || '';
+            const { key, value } = DOT_VALUE_EXTRACTORS.extractAttribute(match);
 
             // Skip empty values
             if (value.trim()) {
@@ -141,7 +142,7 @@ export class TooltipManager {
             .replace(/^\s+|\s+$/gm, '') // Trim lines
             .replace(/\s*\[\s*/, ' [') // Clean up bracket spacing
             .replace(/\s*\]\s*/, ']') // Clean up closing bracket
-            .replace(/;\s*$/, ''); // Remove trailing semicolon
+            .replace(DOT_PATTERNS.UTILITY.TRAILING_SEMICOLON, ''); // Remove trailing semicolon
     }
 
     positionTooltip(x, y) {
