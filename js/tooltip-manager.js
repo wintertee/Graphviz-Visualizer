@@ -67,11 +67,11 @@ export class TooltipManager {
         const parsed = this.parseDOTContent(content, type);
 
         let attributesHtml = '';
-        
+
         // For nodes, always show ID first
         if (type === 'node') {
             attributesHtml = `<div class="tooltip-attribute"><span class="tooltip-attribute-key">id:</span><span class="tooltip-attribute-value">${parsed.id}</span></div>`;
-            
+
             // Add other attributes if they exist
             if (parsed.attributes.length > 0) {
                 const otherAttributes = parsed.attributes.filter(attr => attr.key.toLowerCase() !== 'id');

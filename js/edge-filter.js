@@ -74,11 +74,12 @@ export class EdgeFilter {
     updateFilterDropdown() {
         const dropdownContent = document.getElementById('edgeFilterContent');
         const labels = Array.from(this.edgeLabels).sort();
+        const showAllChecked = this.selectedLabels.has('all');
 
         // Clear existing options except "Show All"
         dropdownContent.innerHTML = `
             <div class="filter-option all-edges">
-                <input type="checkbox" id="filter-all" value="all" ${this.selectedLabels.has('all') ? 'checked' : ''}>
+                <input type="checkbox" id="filter-all" value="all" ${showAllChecked ? 'checked' : ''}>
                 <label for="filter-all">Show All Edges</label>
             </div>
         `;
@@ -87,8 +88,13 @@ export class EdgeFilter {
         labels.forEach((label, index) => {
             const optionDiv = document.createElement('div');
             optionDiv.className = 'filter-option';
+            // If "Show All" is checked, also check this option and add to selectedLabels
+            const isChecked = this.selectedLabels.has(label) || showAllChecked;
+            if (showAllChecked) {
+                this.selectedLabels.add(label);
+            }
             optionDiv.innerHTML = `
-                <input type="checkbox" id="filter-${index}" value="${label}" ${this.selectedLabels.has(label) ? 'checked' : ''}>
+                <input type="checkbox" id="filter-${index}" value="${label}" ${isChecked ? 'checked' : ''}>
                 <label for="filter-${index}">${label}</label>
             `;
             dropdownContent.appendChild(optionDiv);
@@ -97,8 +103,12 @@ export class EdgeFilter {
         // Add option for edges without labels
         const unlabeledDiv = document.createElement('div');
         unlabeledDiv.className = 'filter-option';
+        const unlabeledChecked = this.selectedLabels.has('__no_label__') || showAllChecked;
+        if (showAllChecked) {
+            this.selectedLabels.add('__no_label__');
+        }
         unlabeledDiv.innerHTML = `
-            <input type="checkbox" id="filter-no-label" value="__no_label__" ${this.selectedLabels.has('__no_label__') ? 'checked' : ''}>
+            <input type="checkbox" id="filter-no-label" value="__no_label__" ${unlabeledChecked ? 'checked' : ''}>
             <label for="filter-no-label">Edges without labels</label>
         `;
         dropdownContent.appendChild(unlabeledDiv);
@@ -339,34 +349,61 @@ export class EdgeFilter {
 
         if (value === 'all') {
             if (checkbox.checked) {
-                // If "Show All" is checked, clear other selections and select all
+                // If "Show All" is checked, automatically check all other options
                 this.selectedLabels.clear();
                 this.selectedLabels.add('all');
 
-                // Uncheck all other checkboxes
+                // Check all other checkboxes and add them to selectedLabels
                 document.querySelectorAll('#edgeFilterContent input[type="checkbox"]').forEach(cb => {
                     if (cb.value !== 'all') {
-                        cb.checked = false;
+                        cb.checked = true;
+                        this.selectedLabels.add(cb.value);
                     }
                 });
             } else {
-                // If "Show All" is unchecked, remove it from selection
+                // If "Show All" is unchecked, uncheck all other options
                 this.selectedLabels.delete('all');
+                document.querySelectorAll('#edgeFilterContent input[type="checkbox"]').forEach(cb => {
+                    if (cb.value !== 'all') {
+                        cb.checked = false;
+                        this.selectedLabels.delete(cb.value);
+                    }
+                });
             }
         } else {
             // Handle specific label selection
             if (checkbox.checked) {
                 this.selectedLabels.add(value);
-                // If any specific label is selected, uncheck "Show All"
-                this.selectedLabels.delete('all');
-                document.getElementById('filter-all').checked = false;
+                
+                // Check if all individual options are now selected
+                const allCheckboxes = document.querySelectorAll('#edgeFilterContent input[type="checkbox"]');
+                const individualCheckboxes = Array.from(allCheckboxes).filter(cb => cb.value !== 'all');
+                const allIndividualChecked = individualCheckboxes.every(cb => cb.checked);
+                
+                // If all individual options are checked, also check "Show All"
+                if (allIndividualChecked && individualCheckboxes.length > 0) {
+                    this.selectedLabels.add('all');
+                    document.getElementById('filter-all').checked = true;
+                }
             } else {
                 this.selectedLabels.delete(value);
+                
+                // If any specific label is unchecked, uncheck "Show All"
+                this.selectedLabels.delete('all');
+                document.getElementById('filter-all').checked = false;
 
                 // If no specific labels selected, default to "Show All"
                 if (this.selectedLabels.size === 0) {
                     this.selectedLabels.add('all');
                     document.getElementById('filter-all').checked = true;
+                    
+                    // Also check all other checkboxes
+                    document.querySelectorAll('#edgeFilterContent input[type="checkbox"]').forEach(cb => {
+                        if (cb.value !== 'all') {
+                            cb.checked = true;
+                            this.selectedLabels.add(cb.value);
+                        }
+                    });
                 }
             }
         }
@@ -489,6 +526,17 @@ export class EdgeFilter {
         this.selectedLabels.clear();
         this.selectedLabels.add('all');
         this.updateFilterDropdown();
+        
+        // After updating the dropdown, also check all individual options
+        setTimeout(() => {
+            document.querySelectorAll('#edgeFilterContent input[type="checkbox"]').forEach(cb => {
+                if (cb.value !== 'all') {
+                    cb.checked = true;
+                    this.selectedLabels.add(cb.value);
+                }
+            });
+        }, 0);
+        
         this.applyFilter();
     }
 }
