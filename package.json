@@ -16,8 +16,7 @@
         "dot",
         "visualization",
         "svg",
-        "javascript",
-        "modular"
+        "javascript"
     ],
     "author": "wintertee",
     "license": "MIT",
