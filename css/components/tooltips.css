@@ -62,26 +62,54 @@
 
 /* Node Tooltip Styles */
 .tooltip-content.node-tooltip {
-    background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
-    border-color: #3182ce;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    border: 1px solid #60a5fa;
+}
+
+.tooltip-content.node-tooltip .tooltip-header {
+    border-bottom: 1px solid rgba(96, 165, 250, 0.3);
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+}
+
+.tooltip-content.node-tooltip .tooltip-icon {
+    background: rgba(96, 165, 250, 0.8);
+    color: #1e3a8a;
 }
 
 .tooltip-content.node-tooltip::before {
-    border-bottom-color: #1a365d;
+    border-bottom-color: #1e3a8a;
 }
 
 .custom-tooltip.top .tooltip-content.node-tooltip::before {
-    border-top-color: #2c5282;
+    border-top-color: #3b82f6;
 }
+
+
 
 /* Edge Tooltip Styles */
 .tooltip-content.edge-tooltip {
-    background: linear-gradient(135deg, #742a2a 0%, #9c4221 100%);
-    border-color: #dd6b20;
+    background: linear-gradient(135deg, #be185d 0%, #ec4899 100%);
+    border: 1px solid #f472b6;
+}
+
+.tooltip-content.edge-tooltip .tooltip-header {
+    border-bottom: 1px solid rgba(244, 114, 182, 0.3);
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+}
+
+.tooltip-content.edge-tooltip .tooltip-icon {
+    background: rgba(244, 114, 182, 0.8);
+    color: #be185d;
 }
 
 .tooltip-content.edge-tooltip::before {
-    border-bottom-color: #742a2a;
+    border-bottom-color: #be185d;
+}
+
+.custom-tooltip.top .tooltip-content.edge-tooltip::before {
+    border-top-color: #ec4899;
 }
 
 .custom-tooltip.top .tooltip-content.edge-tooltip::before {

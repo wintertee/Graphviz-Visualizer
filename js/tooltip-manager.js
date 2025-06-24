@@ -64,20 +64,37 @@ export class TooltipManager {
         const title = type === 'node' ? 'Node' : type === 'edge' ? 'Edge' : 'Element';
 
         // Parse DOT attributes from content
-        const parsed = this.parseDOTContent(content);
+        const parsed = this.parseDOTContent(content, type);
 
         let attributesHtml = '';
-        if (parsed.attributes.length > 0) {
-            attributesHtml = parsed.attributes.map(attr =>
-                `<div class="tooltip-attribute"><span class="tooltip-attribute-key">${attr.key}:</span><span class="tooltip-attribute-value">${attr.value}</span></div>`
-            ).join('');
-        } else {
-            // 如果没有解析到属性，显示一个默认信息
+        
+        // For nodes, always show ID first
+        if (type === 'node') {
             attributesHtml = `<div class="tooltip-attribute"><span class="tooltip-attribute-key">id:</span><span class="tooltip-attribute-value">${parsed.id}</span></div>`;
+            
+            // Add other attributes if they exist
+            if (parsed.attributes.length > 0) {
+                const otherAttributes = parsed.attributes.filter(attr => attr.key.toLowerCase() !== 'id');
+                if (otherAttributes.length > 0) {
+                    attributesHtml += otherAttributes.map(attr =>
+                        `<div class="tooltip-attribute"><span class="tooltip-attribute-key">${attr.key}:</span><span class="tooltip-attribute-value">${attr.value}</span></div>`
+                    ).join('');
+                }
+            }
+        } else {
+            // For edges and other elements, show all attributes
+            if (parsed.attributes.length > 0) {
+                attributesHtml = parsed.attributes.map(attr =>
+                    `<div class="tooltip-attribute"><span class="tooltip-attribute-key">${attr.key}:</span><span class="tooltip-attribute-value">${attr.value}</span></div>`
+                ).join('');
+            } else {
+                // If no attributes found, show the ID
+                attributesHtml = `<div class="tooltip-attribute"><span class="tooltip-attribute-key">id:</span><span class="tooltip-attribute-value">${parsed.id}</span></div>`;
+            }
         }
 
         return `<div class="tooltip-content ${typeClass}"><div class="tooltip-header"><span class="tooltip-icon">${icon}</span><span>${title}</span></div><div class="tooltip-body">${attributesHtml}</div></div>`;
-    } parseDOTContent(content) {
+    } parseDOTContent(content, type = null) {
         if (!content) return { id: 'Unknown', definition: '', attributes: [] };
 
         // Extract node/edge ID and attributes
@@ -99,7 +116,23 @@ export class TooltipManager {
         } else if (nodeMatch) {
             // Node definition
             id = DOT_VALUE_EXTRACTORS.extractValue(nodeMatch, 1);
+        } else if (type === 'node') {
+            // For nodes, if no match with patterns, try to extract the first word as ID
+            // This handles cases where the content is just the node ID
+            const simpleNodeMatch = firstLine.match(/^([^\s\[\{;]+)/);
+            if (simpleNodeMatch) {
+                id = simpleNodeMatch[1];
+            }
+        } else if (type === 'edge') {
+            // For edges, try to find arrow operators in the content
+            const arrowMatch = firstLine.match(/([^-\s]+)\s*(-[->])\s*([^-\s\[\{;]+)/);
+            if (arrowMatch) {
+                id = `${arrowMatch[1]}${arrowMatch[2]}${arrowMatch[3]}`;
+            }
         }
+
+        // Clean up ID from quotes if present
+        id = id.replace(/^["']|["']$/g, '');
 
         // Extract attributes with improved regex using global patterns
         const attributes = [];
@@ -112,21 +145,13 @@ export class TooltipManager {
         while ((match = attributeRegex.exec(fullContent)) !== null) {
             const { key, value } = DOT_VALUE_EXTRACTORS.extractAttribute(match);
 
-            // Skip empty values
-            if (value.trim()) {
+            // Skip empty values and don't duplicate ID as an attribute if it's already in the main display
+            if (value.trim() && (type !== 'node' || key.toLowerCase() !== 'id')) {
                 attributes.push({
                     key: key,
                     value: value.trim()
                 });
             }
-        }
-
-        // If no attributes found but we have content, try to extract the ID as an attribute
-        if (attributes.length === 0 && id !== 'Unknown') {
-            attributes.push({
-                key: 'id',
-                value: id
-            });
         }
 
         return {
