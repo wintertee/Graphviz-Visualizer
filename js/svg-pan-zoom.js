@@ -47,22 +47,13 @@ export class SVGPanZoomHandler {
                 return;
             }
 
-            // Limit zoom range
-            const currentWidth = this.svgState.viewBox[2];
-            const newWidth = currentWidth * zoomFactor;
-            const minWidth = 10; // Minimum zoom limit
-            const maxWidth = 10000; // Maximum zoom limit
-
-            if (newWidth < minWidth || newWidth > maxWidth) {
-                return; // Don't zoom beyond limits
-            }
-
             const pt = this.svg.createSVGPoint();
             pt.x = screenCenter.x;
             pt.y = screenCenter.y;
 
             const svgCenter = pt.matrixTransform(ctm.inverse());
 
+            const newWidth = this.svgState.viewBox[2] * zoomFactor;
             const newHeight = this.svgState.viewBox[3] * zoomFactor;
 
             this.svgState.viewBox[0] = svgCenter.x - (svgCenter.x - this.svgState.viewBox[0]) * zoomFactor;

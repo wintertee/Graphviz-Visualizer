@@ -34,10 +34,6 @@ export const CONFIG = {
             OUT: 1.1
         }
     },
-    ZOOM_LIMITS: {
-        MIN_WIDTH: 10,
-        MAX_WIDTH: 10000
-    },
 
     // SVG settings
     DEFAULT_VIEWBOX_PADDING: 0.05, // 5% of bbox size
