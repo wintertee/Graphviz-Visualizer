@@ -1,5 +1,5 @@
 // Edge coloring module for coloring edges by type
-import { DOT_PATTERNS, DOT_VALUE_EXTRACTORS } from './dot-regex-patterns.js';
+import { DOT_PATTERNS, DOT_VALUE_EXTRACTORS, DOT_EDGE_VALIDATORS } from './dot-regex-patterns.js';
 
 export class EdgeColoring {
     constructor(visualizer) {
@@ -71,7 +71,7 @@ export class EdgeColoring {
                 const trimmedLine = line.trim();
 
                 // Check if this line starts an edge definition
-                if (this.isEdgeDefinitionLine(trimmedLine)) {
+                if (DOT_EDGE_VALIDATORS.isEdgeDefinitionLine(trimmedLine)) {
                     // Parse the complete edge definition
                     const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -176,7 +176,7 @@ export class EdgeColoring {
                 const trimmedLine = line.trim();
 
                 // Check if this line starts an edge definition
-                if (this.isEdgeDefinitionLine(trimmedLine)) {
+                if (DOT_EDGE_VALIDATORS.isEdgeDefinitionLine(trimmedLine)) {
                     // Parse the complete edge definition
                     const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -225,13 +225,25 @@ export class EdgeColoring {
 
             if (hasAttributes) {
                 // Check if color attribute already exists
-                const colorPattern = /\bcolor\s*=\s*[^,\]]+/i;
+                const colorPattern = /\bcolor\s*=\s*(?:"[^"]*"|[^,\]\s]+)/i;
                 if (colorPattern.test(edgeText)) {
                     // Replace existing color
                     return edgeText.replace(colorPattern, `color="${color}"`);
                 } else {
                     // Add color to existing attributes
-                    return edgeText.replace(/\]/, `, color="${color}"]`);
+                    // Find the position right before the closing bracket
+                    const beforeClosingBracket = edgeText.lastIndexOf(']');
+                    if (beforeClosingBracket !== -1) {
+                        const beforeBracket = edgeText.substring(0, beforeClosingBracket).trim();
+                        const afterBracket = edgeText.substring(beforeClosingBracket);
+
+                        // Check if we need a space or comma separator
+                        const needsSeparator = !beforeBracket.endsWith('[') && !beforeBracket.endsWith(' ') && !beforeBracket.endsWith(',');
+                        const separator = needsSeparator ? ' ' : '';
+
+                        return `${beforeBracket}${separator}color="${color}"${afterBracket}`;
+                    }
+                    return edgeText.replace(/\]/, ` color="${color}"]`);
                 }
             } else {
                 // Add new attribute block with color
@@ -394,33 +406,6 @@ export class EdgeColoring {
         if (legend) {
             legend.remove();
         }
-    }
-
-    // Check if a line represents the start of an edge definition
-    isEdgeDefinitionLine(line) {
-        // Skip empty lines and comments
-        if (!line || line.startsWith('//') || line.startsWith('#')) {
-            return false;
-        }
-
-        // Skip lines that are clearly attribute assignments (contain = but not in edge context)
-        if (line.includes('=') && !line.match(/\w+\s*(-[->]|--)\s*\w+/)) {
-            return false;
-        }
-
-        // Skip lines that start with attribute names followed by =
-        if (/^\s*\w+\s*=/.test(line)) {
-            return false;
-        }
-
-        // Check for edge connectors but ensure it's not inside quotes or string values
-        const edgeConnectorRegex = /(?:^|[^"'])[^"']*?(-[->]|--)(?:[^"']*?(?:$|[^"']))/;
-
-        // More precise check: line should look like an edge definition
-        // Should match: nodeA -> nodeB or nodeA -- nodeB (with optional whitespace)
-        const edgePattern = /^\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)\s*(-[->]|--)\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)/;
-
-        return edgePattern.test(line);
     }
 
     // Setup event listeners

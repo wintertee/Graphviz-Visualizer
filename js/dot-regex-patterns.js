@@ -53,16 +53,19 @@ export const DOT_PATTERNS = {
         KEY: /(\w+)/,
 
         // Attribute value pattern (handles all value types)
-        VALUE: /(?:"([^"]*)"|<([^>]*)>|([^,\]\s]+))/,
+        // Fixed to properly handle unquoted values with special characters
+        VALUE: /(?:"([^"]*)"|<([^>]*)>|([^,;]+?)(?=\s*[,;\]]|$))/,
 
         // Complete attribute pattern (key = value)
-        COMPLETE: /(\w+)\s*=\s*(?:"([^"]*)"|<([^>]*)>|([^,\]\s]+))/,
+        // Uses lookahead to properly capture unquoted values with special characters
+        COMPLETE: /(\w+)\s*=\s*(?:"([^"]*)"|<([^>]*)>|([^,;]+?)(?=\s*[,;\]]|$))/,
 
         // Global attribute pattern
-        COMPLETE_GLOBAL: /(\w+)\s*=\s*(?:"([^"]*)"|<([^>]*)>|([^,\]\s]+))/g,
+        COMPLETE_GLOBAL: /(\w+)\s*=\s*(?:"([^"]*)"|<([^>]*)>|([^,;]+?)(?=\s*[,;\]]|$))/g,
 
         // Label attribute specifically
-        LABEL: /label\s*=\s*(?:"([^"]*)"|<([^>]*)>|([^,\]\s]+))/
+        // Fixed to handle unquoted values with special characters
+        LABEL: /label\s*=\s*(?:"([^"]*)"|<([^>]*)>|([^,;]+?)(?=\s*[,;\]]|$))/
     },
 
     // Common utility patterns
@@ -163,5 +166,65 @@ export const DOT_VALIDATORS = {
      */
     isKeyword(str) {
         return DOT_PATTERNS.UTILITY.KEYWORDS.test(str);
+    }
+};
+
+// Edge detection patterns for filtering and coloring
+export const DOT_EDGE_DETECTION = {
+    // Pattern to detect if a line contains an edge definition with quoted node IDs
+    EDGE_WITH_QUOTED_NODES: /(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)\s*(-[->]|--)\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)/,
+
+    // Pattern to detect edge definition at start of line (complete edge pattern)
+    EDGE_DEFINITION_START: /^\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)\s*(-[->]|--)\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)/,
+
+    // Pattern to detect attribute assignment at start of line
+    ATTRIBUTE_ASSIGNMENT_START: /^\s*\w+\s*=/,
+
+    // Pattern to detect edge connectors outside quotes
+    EDGE_CONNECTOR_OUTSIDE_QUOTES: /(?:^|[^"'])[^"']*?(-[->]|--)(?:[^"']*?(?:$|[^"']))/,
+
+    // Pattern to detect node definition lines
+    NODE_DEFINITION: /^\s*[a-zA-Z0-9_"<][^-]*\[/,
+    NODE_SIMPLE: /^\s*[a-zA-Z0-9_"<][^-]*\s*$/
+};
+
+// Edge detection helper functions
+export const DOT_EDGE_VALIDATORS = {
+    /**
+     * Check if a line represents the start of an edge definition
+     * @param {string} line - Line to check
+     * @returns {boolean} True if line starts an edge definition
+     */
+    isEdgeDefinitionLine(line) {
+        // Skip empty lines and comments
+        if (!line || line.startsWith('//') || line.startsWith('#')) {
+            return false;
+        }
+
+        // Skip lines that are clearly attribute assignments (contain = but not in edge context)
+        // Fixed to handle quoted node IDs properly and edge definitions with attributes
+        if (line.includes('=') && !line.match(DOT_EDGE_DETECTION.EDGE_WITH_QUOTED_NODES)) {
+            return false;
+        }
+
+        // Skip lines that start with attribute names followed by =
+        if (DOT_EDGE_DETECTION.ATTRIBUTE_ASSIGNMENT_START.test(line)) {
+            return false;
+        }
+
+        // More precise check: line should look like an edge definition
+        return DOT_EDGE_DETECTION.EDGE_DEFINITION_START.test(line);
+    },
+
+    /**
+     * Check if a line is a node definition
+     * @param {string} line - Line to check
+     * @returns {boolean} True if line is a node definition
+     */
+    isNodeDefinitionLine(line) {
+        const trimmed = line.trim();
+        return DOT_EDGE_DETECTION.NODE_DEFINITION.test(trimmed) ||
+            DOT_EDGE_DETECTION.NODE_SIMPLE.test(trimmed) ||
+            (trimmed.includes('=') && !trimmed.includes('->') && !trimmed.includes('--'));
     }
 };

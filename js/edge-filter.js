@@ -1,5 +1,5 @@
 // Edge filter module for filtering edges by label
-import { DOT_PATTERNS, DOT_VALUE_EXTRACTORS } from './dot-regex-patterns.js';
+import { DOT_PATTERNS, DOT_VALUE_EXTRACTORS, DOT_EDGE_VALIDATORS } from './dot-regex-patterns.js';
 
 export class EdgeFilter {
     constructor(visualizer) {
@@ -38,7 +38,7 @@ export class EdgeFilter {
 
                 // Check if this line starts an edge definition
                 // More precise check: not inside attribute brackets and matches edge pattern
-                if (this.isEdgeDefinitionLine(trimmedLine)) {
+                if (DOT_EDGE_VALIDATORS.isEdgeDefinitionLine(trimmedLine)) {
                     // Parse the complete edge definition
                     const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -174,7 +174,7 @@ export class EdgeFilter {
             const trimmedLine = line.trim();
 
             // Check if this line starts an edge definition
-            if (this.isEdgeDefinitionLine(trimmedLine)) {
+            if (DOT_EDGE_VALIDATORS.isEdgeDefinitionLine(trimmedLine)) {
                 // This might be a multi-line edge definition
                 const edgeBlock = this.parseCompleteEdge(lines, i);
 
@@ -206,9 +206,7 @@ export class EdgeFilter {
                 i = edgeBlock.endLineIndex + 1;
             } else {
                 // Check if this line starts a node definition
-                if (trimmedLine.match(/^\s*[a-zA-Z0-9_"<][^-]*\[/) ||
-                    trimmedLine.match(/^\s*[a-zA-Z0-9_"<][^-]*\s*$/) ||
-                    trimmedLine.includes('=') && !trimmedLine.includes('->') && !trimmedLine.includes('--')) {
+                if (DOT_EDGE_VALIDATORS.isNodeDefinitionLine(trimmedLine)) {
 
                     // This might be a multi-line node definition
                     const nodeBlock = this.parseCompleteNode(lines, i);
@@ -315,33 +313,6 @@ export class EdgeFilter {
         };
     }
 
-    // Check if a line represents the start of an edge definition
-    isEdgeDefinitionLine(line) {
-        // Skip empty lines and comments
-        if (!line || line.startsWith('//') || line.startsWith('#')) {
-            return false;
-        }
-
-        // Skip lines that are clearly attribute assignments (contain = but not in edge context)
-        if (line.includes('=') && !line.match(/\w+\s*(-[->]|--)\s*\w+/)) {
-            return false;
-        }
-
-        // Skip lines that start with attribute names followed by =
-        if (/^\s*\w+\s*=/.test(line)) {
-            return false;
-        }
-
-        // Check for edge connectors but ensure it's not inside quotes or string values
-        const edgeConnectorRegex = /(?:^|[^"'])[^"']*?(-[->]|--)(?:[^"']*?(?:$|[^"']))/;
-
-        // More precise check: line should look like an edge definition
-        // Should match: nodeA -> nodeB or nodeA -- nodeB (with optional whitespace)
-        const edgePattern = /^\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)\s*(-[->]|--)\s*(?:"[^"]*"|'[^']*'|<[^>]*>|[a-zA-Z0-9_\-\.]+)/;
-
-        return edgePattern.test(line);
-    }
-
     // Handle filter selection changes
     onFilterChange(event) {
         const checkbox = event.target;
@@ -374,12 +345,12 @@ export class EdgeFilter {
             // Handle specific label selection
             if (checkbox.checked) {
                 this.selectedLabels.add(value);
-                
+
                 // Check if all individual options are now selected
                 const allCheckboxes = document.querySelectorAll('#edgeFilterContent input[type="checkbox"]');
                 const individualCheckboxes = Array.from(allCheckboxes).filter(cb => cb.value !== 'all');
                 const allIndividualChecked = individualCheckboxes.every(cb => cb.checked);
-                
+
                 // If all individual options are checked, also check "Show All"
                 if (allIndividualChecked && individualCheckboxes.length > 0) {
                     this.selectedLabels.add('all');
@@ -387,7 +358,7 @@ export class EdgeFilter {
                 }
             } else {
                 this.selectedLabels.delete(value);
-                
+
                 // If any specific label is unchecked, uncheck "Show All"
                 this.selectedLabels.delete('all');
                 document.getElementById('filter-all').checked = false;
@@ -396,7 +367,7 @@ export class EdgeFilter {
                 if (this.selectedLabels.size === 0) {
                     this.selectedLabels.add('all');
                     document.getElementById('filter-all').checked = true;
-                    
+
                     // Also check all other checkboxes
                     document.querySelectorAll('#edgeFilterContent input[type="checkbox"]').forEach(cb => {
                         if (cb.value !== 'all') {
@@ -526,7 +497,7 @@ export class EdgeFilter {
         this.selectedLabels.clear();
         this.selectedLabels.add('all');
         this.updateFilterDropdown();
-        
+
         // After updating the dropdown, also check all individual options
         setTimeout(() => {
             document.querySelectorAll('#edgeFilterContent input[type="checkbox"]').forEach(cb => {
@@ -536,7 +507,7 @@ export class EdgeFilter {
                 }
             });
         }, 0);
-        
+
         this.applyFilter();
     }
 }
